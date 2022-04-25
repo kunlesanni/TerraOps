@@ -1,5 +1,5 @@
-resource "azurerm_resource_group" "tfdeploy2" {
-    name = "DevOpsTFRG"
+resource "azurerm_resource_group" "tfdeploy3" {
+    name = "DevOpsTFRGCD"
     location = "uk south"
 }
 
