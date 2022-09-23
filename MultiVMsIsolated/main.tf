@@ -18,70 +18,9 @@ variable "vmall" {
     }
   ]
 }
-
-
-# locals {
-#   vm       = var.vm_names
-#   rg       = var.rg_names
-#   vmrg     = zipmap(local.vm, local.rg)
-#   vmsubnet = zipmap(local.vm, keys(var.subnets))
-#   vmrgsb = { "rg" = var.rg_names
-#               "subnet" = toset(keys(var.subnets))
-#               "vm"     = toset(var.vm_names)
-#   }
-# }
-
-# locals {
-#   vm = var.vm_names
-#   rg = var.rg_names
-#   vmrg=[for k,v in zipmap(local.vm, local.rg):{
-#     vm = k
-#     rg = v
-#   }]
-# }
-
-
-# var.mylist1 = ['name1','name2','name3']
-# var.mylist2 = ['ip1','ip2','ip3']
-# var.mylist3 = ['eip1','eip2','eip3']
-
-
-# locals {
-#   inventory_ini = <<EOL
-# %{ for i, name in var.vm_names ~}
-# ${name} ip-address=${var.mylist2[i]} eip-address=${var.mylist3[i]}
-# %{ endfor ~}
-# EOL
-# }
-
 output "vmall" {
   value = var.vmall
 }
-
-# output "vmrgsb" {
-#   value = local.vmrgsb.key.rg
-# }
-
-# locals {
-#   vmrgsb  = var.vmrgsb
-# }
-
-
-# output "vmrg" {
-#   value = local.vmrg
-# }
-
-# variable "vmrgsb" {
-#   description = "(optional) describe your variable"
-#   default = {
-#     vm1 = {rg1 = {"sb1" = ["10.0.1.0/24"]}},
-#     vm2 = {rg2 = {"sb2" = ["10.0.1.0/24"]}}
-#   }
-# }
-
-# output "vmrgsb" {
-#   value = local.vmrgsb
-# }
 
 resource "azurerm_resource_group" "rg" {
   for_each = { for vmall in var.vmall : vmall.rg => vmall }
