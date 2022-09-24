@@ -137,6 +137,10 @@ resource "azurerm_subnet" "subnet" {
   address_prefixes     = each.value.sn_prefix
 }
 
+output "snid" {
+  value = values(azurerm_subnet.subnet)[*].id
+}
+
 resource "azurerm_network_interface" "nic" {
   for_each            = local.vm_all
   name                = "${each.value.name}-nic"
@@ -145,32 +149,33 @@ resource "azurerm_network_interface" "nic" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.subnet[each.value.sn].id
+    # subnet_id                     = azurerm_subnet.subnet[each.value.sn].id
+    subnet_id = values(azurerm_subnet.subnet)[*].id
     private_ip_address_allocation = "Dynamic"
   }
 }
 
-resource "azurerm_windows_virtual_machine" "vm" {
-  for_each            = local.vm_all
-  name                = each.value.name
-  resource_group_name = azurerm_resource_group.rg[each.value.rg].name
-  location            = var.location
-  size                = "Standard_B1ms"
-  admin_username      = "adminuser"
-  admin_password      = "Default@12345"
-  network_interface_ids = [
-    azurerm_network_interface.nic["${each.value.name}-nic"].id,
-  ]
+# resource "azurerm_windows_virtual_machine" "vm" {
+#   for_each            = local.vm_all
+#   name                = each.value.name
+#   resource_group_name = azurerm_resource_group.rg[each.value.rg].name
+#   location            = var.location
+#   size                = "Standard_B1ms"
+#   admin_username      = "adminuser"
+#   admin_password      = "Default@12345"
+#   network_interface_ids = [
+#     azurerm_network_interface.nic["${each.value.name}-nic"].id,
+#   ]
 
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
+#   os_disk {
+#     caching              = "ReadWrite"
+#     storage_account_type = "Standard_LRS"
+#   }
 
-  source_image_reference {
-    publisher = "MicrosoftWindowsServer"
-    offer     = "WindowsServer"
-    sku       = "2022-Datacenter"
-    version   = "latest"
-  }
-}
+#   source_image_reference {
+#     publisher = "MicrosoftWindowsServer"
+#     offer     = "WindowsServer"
+#     sku       = "2022-Datacenter"
+#     version   = "latest"
+#   }
+# }
