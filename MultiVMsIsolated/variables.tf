@@ -36,15 +36,15 @@ variable "location" {
 }
 
 variable "shared_rg" {
-  type = string
+  type        = string
   description = "(optional) describe your variable"
-  default = "SharedResourceGroup"
+  default     = "SharedResourceGroup"
 }
 
 variable "vnet" {
-  type = string
+  type        = string
   description = "(optional) describe your variable"
-  default = "HubVNET"
+  default     = "HubVNET"
 }
 
 # variable "vmrgsb" {
@@ -58,8 +58,8 @@ variable "vnet" {
 # variable "vmrgsb" {
 #   description = "(optional) describe your variable"
 #   default = {
-#     vm1 = {rg = {"subnet" = ["10.0.1.0/24"]}}
-#     vm2 = {rg2 = {"sb2" = ["10.0.1.0/24"]}}
+#     vm1 = {rg = {"subnet" }}
+#     vm2 = {rg2 = {"sb2" }}
 #   }
 # }
 
@@ -68,7 +68,7 @@ variable "vnet" {
 #   default = {
 #     vm = "vm1",
 #     rg = rg1,
-#     sb = {"sb2" = ["10.0.1.0/24"]}}
+#     sb = {"sb2" }}
 #   }
 
 
@@ -81,58 +81,59 @@ variable "vnet" {
 #   }))
 # }
 
-variable "vmall" {
-default = [
-  {
-    name        = "vm1"
-    rg  = "rg1"
-    sb = "sb1"
-    sb_prefix = ["10.0.1.0/24"]
-      },
-  {
-    name        = "vm2"
-    rg  = "rg2"
-    sb = "sb2"
-    sb_prefix = ["10.0.2.0/24"]
-      }
-]
+# variable "vmall" {
+# default = [
+#   {
+#     name        = "vm1"
+#     rg  = "rg1"
+#     sb = "sb1"
+#     sb_prefix 
+#       },
+#   {
+#     name        = "vm2"
+#     rg  = "rg2"
+#     sb = "sb2"
+#     sb_prefix = ["10.0.2.0/24"]
+#       }
+# ]
+# }
+
+variable "vm_names" {
+  description = "(optional) describe your variable"
+  default = [
+    "ServiceVM1",
+    "ServiceVM2",
+    "ServiceVM3",
+    "ServiceVM4",
+    "ServiceVM5",
+    "ServiceVM6",
+    "ServiceVM7",
+    "ServiceVM8",
+    "ServiceVM9",
+    "ServiceVM10"
+  ]
 }
 
-# variable "vm_names" {
-#   description = "(optional) describe your variable"
-#   default = [
-#     "ServiceVM1",
-#     "ServiceVM2",
-#     "ServiceVM3",
-#     "ServiceVM4",
-#     "ServiceVM5",
-#     "ServiceVM6",
-#     "ServiceVM7",
-#     "ServiceVM8",
-#     "ServiceVM9",
-#     "ServiceVM10"
-#   ]
-# }
-
-# variable "rg_names" {
-#   description = "(optional) describe your variable"
-#   default = [
-#     "RG1",
-#     "RG2",
-#     "RG3",
-#     "RG4",
-#     "RG5",
-#     "RG6",
-#     "RG7",
-#     "RG8",
-#     "RG9",
-#     "RG10"
-#   ]
-# }
+variable "rg_names" {
+  description = "(optional) describe your variable"
+  default = [
+    "RG1",
+    "RG2",
+    "RG3",
+    "RG4",
+    "RG5",
+    "RG6",
+    "RG7",
+    "RG8",
+    "RG9",
+    "RG10"
+  ]
+}
 
 # variable "subnets" {
 #   description = "(optional) describe your variable"
-#     default = {
+
+#   default = {
 #     subnet1  = "10.0.1.0/24"
 #     subnet2  = "10.0.2.0/24"
 #     subnet3  = "10.0.3.0/24"
@@ -145,3 +146,37 @@ default = [
 #     subnet10 = "10.0.10.0/24"
 #   }
 # }
+
+variable "subnets" {
+  description = "(optional) describe your variable"
+
+  default = [
+    "subnet1",
+    "subnet2",
+    "subnet3",
+    "subnet4",
+    "subnet5",
+    "subnet6",
+    "subnet7",
+    "subnet8",
+    "subnet9",
+    "subnet10"
+  ]
+}
+
+variable "sn_prefixes" {
+  description = "(optional) describe your variable"
+
+  default = [
+    "10.0.1.0/24",
+    "10.0.2.0/24",
+    "10.0.3.0/24",
+    "10.0.4.0/24",
+    "10.0.5.0/24",
+    "10.0.6.0/24",
+    "10.0.7.0/24",
+    "10.0.8.0/24",
+    "10.0.9.0/24",
+    "10.0.10.0/24"
+  ]
+}

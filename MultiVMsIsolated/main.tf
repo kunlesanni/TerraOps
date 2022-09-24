@@ -2,21 +2,48 @@ provider "azurerm" {
   features {}
 }
 
-variable "vmall" {
-  default = [
-    {
-      name      = "vm1"
-      rg        = "rg1"
-      sb        = "sb1"
-      sb_prefix = ["10.0.1.0/24"]
-    },
-    {
-      name      = "vm2"
-      rg        = "rg2"
-      sb        = "sb2"
-      sb_prefix = ["10.0.2.0/24"]
-    }
-  ]
+# variable "vmall" {
+#   default = [
+#     {
+#       name      = "vm1"
+#       rg        = "rg1"
+#       sb        = "sb1"
+#       sb_prefix = ["10.0.1.0/24"]
+#     },
+#     {
+#       name      = "vm2"
+#       rg        = "rg2"
+#       sb        = "sb2"
+#       sb_prefix = ["10.0.2.0/24"]
+#     }
+#   ]
+# }
+
+# variable "vmall" {
+# default = [
+#   {
+#     name        = "vm1"
+#     rg  = "rg1"
+#     sb = "sb1"
+#     sb_prefix = ["10.0.1.0/24"]
+#       },
+#   {
+#     name        = "vm2"
+#     rg  = "rg2"
+#     sb = "sb2"
+#     sb_prefix = ["10.0.2.0/24"]
+#       }
+# ]
+# }
+locals {
+  vm_all = {for idx, name in var.vm_names: 
+            name => {
+              "name" = name
+              rg  = var.rg_names[idx]
+              sn  = var.subnets[idx]
+              sn_prefix = [var.sn_prefixes[idx]]
+            }
+           }
 }
 
 
@@ -54,9 +81,9 @@ variable "vmall" {
 # EOL
 # }
 
-output "vmall" {
-  value = var.vmall
-}
+# output "vmall" {
+#   value = var.vmall
+# }
 
 # output "vmrgsb" {
 #   value = local.vmrgsb.key.rg
@@ -84,7 +111,7 @@ output "vmall" {
 # }
 
 resource "azurerm_resource_group" "rg" {
-  for_each = { for vmall in var.vmall : vmall.rg => vmall }
+  for_each = local.vm_all
   # for_each = toset(var.vmall)
   name     = each.value.rg
   location = var.location
@@ -103,28 +130,28 @@ resource "azurerm_virtual_network" "vnet" {
 }
 
 resource "azurerm_subnet" "subnet" {
-  for_each             = { for vmall in var.vmall : vmall.sb => vmall }
-  name                 = each.value.sb
+  for_each             = local.vm_all
+  name                 = each.value.sn
   resource_group_name  = each.value.rg
   virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = each.value.sb_prefix
+  address_prefixes     = each.value.sn_prefix
 }
 
 resource "azurerm_network_interface" "nic" {
-  for_each            = { for vmall in var.vmall : "${vmall.name}-nic" => vmall }
+  for_each            = local.vm_all
   name                = "${each.value.name}-nic"
   location            = var.location
   resource_group_name = each.value.rg
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.subnet[each.value.sb].id
+    subnet_id                     = azurerm_subnet.subnet[each.value.sn].id
     private_ip_address_allocation = "Dynamic"
   }
 }
 
 resource "azurerm_windows_virtual_machine" "vm" {
-  for_each            = { for vmall in var.vmall : vmall.name => vmall }
+  for_each            = local.vm_all
   name                = each.value.name
   resource_group_name = azurerm_resource_group.rg[each.value.rg].name
   location            = var.location
