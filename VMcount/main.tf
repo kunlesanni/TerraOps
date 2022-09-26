@@ -36,14 +36,10 @@ provider "azurerm" {
 # ]
 # }
 locals {
-  vm_all = {for idx, name in var.vm_names: 
-            name => {
-              name = var.vm_names[idx]
-              rg  = var.rg_names[idx]
-              sn  = var.subnets[idx]
-              sn_prefix = [var.sn_prefixes[idx]]
-            }
-           }
+  count = 10
+  vm_prefix = "VirtualMachine"
+  rg_prefix = "ResourceGroup"
+  prefix = "PowerApp"
 }
 
 # locals {
@@ -122,70 +118,64 @@ locals {
 # }
 
 resource "azurerm_resource_group" "rg" {
-  for_each = local.vm_all
-  # for_each = toset(var.vmall)
-  name     = each.value.rg
+  count = local.count
+  name     = "${local.prefix}RG${count.index+1}"
   location = var.location
 }
 
-resource "azurerm_resource_group" "SharedRG" {
-  name     = var.shared_rg
-  location = var.location
+data "azurerm_resource_group" "SharedRG" {
+  name     = "SharedRG1"
+  
 }
 
 resource "azurerm_virtual_network" "vnet" {
-  name                = var.vnet
-  address_space       = ["10.0.0.0/16"]
+  name                = "${local.prefix}VNET"
+  address_space       = ["10.2.0.0/16"]
   location            = var.location
-  resource_group_name = azurerm_resource_group.SharedRG.name
+  resource_group_name = data.azurerm_resource_group.SharedRG.name
 }
 
 resource "azurerm_subnet" "subnet" {
-  for_each             = local.vm_all
-  name                 = each.value.sn
-  resource_group_name  = each.value.rg
+  count = local.count
+  name                 = "${local.prefix}Subnet${count.index+1}"
+  resource_group_name  = data.azurerm_resource_group.SharedRG.name
   virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = each.value.sn_prefix
-}
-
-output "snid" {
-  value = values(azurerm_subnet.subnet)[*].id
+  address_prefixes     = [element(var.sn_prefixes, count.index+1)]
 }
 
 resource "azurerm_network_interface" "nic" {
-  for_each            = local.vm_all
-  name                = each.value.name
+  count =local.count
+  name                = "${local.prefix}NIC${count.index+1}"
   location            = var.location
-  resource_group_name = each.value.rg
-
+  resource_group_name = azurerm_resource_group.rg[count.index].name
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.subnet[each.value.sn].id
+    subnet_id                     = azurerm_subnet.subnet[count.index].id
     private_ip_address_allocation = "Dynamic"
   }
 }
 
-# resource "azurerm_windows_virtual_machine" "vm" {
-#   for_each            = local.vm_all
-#   name                = each.value.name
-#   resource_group_name = azurerm_resource_group.rg[each.value.rg].name
-#   location            = var.location
-#   size                = "Standard_B1ms"
-#   admin_username      = "adminuser"
-#   admin_password      = "Default@12345"
-#   network_interface_ids = [
-#     azurerm_network_interface.nic["${each.value.name}-nic"].id,
-#   ]
+resource "azurerm_windows_virtual_machine" "vm" {
+  count =local.count
+  name                = "${local.prefix}VM${count.index+1}"
+  resource_group_name = azurerm_resource_group.rg[count.index].name
+  location            = var.location
+  size                = "Standard_B1ms"
+  admin_username      = "adminuser"
+  admin_password      = "Default@12345"
+  network_interface_ids = [
+    azurerm_network_interface.nic[count.index].id,
+  ]
 
-#   os_disk {
-#     caching              = "ReadWrite"
-#     storage_account_type = "Standard_LRS"
-#   }
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
 
-#   source_image_reference {
-#     publisher = "MicrosoftWindowsServer"
-#     offer     = "WindowsServer"
-#     sku       = "2022-Datacenter"
-#     version   = "latest"
-#   }
-# }
+  source_image_reference {
+    publisher = "MicrosoftWindowsServer"
+    offer     = "WindowsServer"
+    sku       = "2022-Datacenter"
+    version   = "latest"
+  }
+}
